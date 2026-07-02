@@ -12,7 +12,7 @@ obj/
 appsettings.Development.json
 appsettings.Production.json
 
-## Frontend (para más adelante)
+## Frontend 
 node_modules/
 dist/
 build/

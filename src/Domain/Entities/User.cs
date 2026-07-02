@@ -11,4 +11,8 @@ public class User
     public UserRole Role { get; set; } = UserRole.User;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<TaskItem> TasksCreated { get; set; } = new List<TaskItem>();
+    public ICollection<TaskItem> TasksAssigned { get; set; } = new List<TaskItem>();
+    public ICollection<Session> Sessions { get; set; } = new List<Session>();
 }

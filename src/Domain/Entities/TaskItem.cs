@@ -9,11 +9,11 @@ public class TaskItem
     public string? Description { get; set; }
     public TaskItemStatus Status { get; set; } = TaskItemStatus.Pendiente;
 
-    // Relación: a quién está asignada la tarea (puede no tener asignado aún)
+  
     public Guid? AssignedToId { get; set; }
     public User? AssignedTo { get; set; }
 
-    // Relación: quién creó la tarea (siempre existe)
+    
     public Guid CreatedById { get; set; }
     public User? CreatedBy { get; set; }
 
