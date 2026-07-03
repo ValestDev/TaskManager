@@ -4,6 +4,7 @@ using TaskManager.Application.Interfaces;
 using TaskManager.Application.Services;
 using TaskManager.Infrastructure.Repositories;
 using TaskManager.Infrastructure.Identity;
+using TaskManager.Infrastructure.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -17,9 +18,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]
     ?? throw new InvalidOperationException("Falta configurar Jwt:Secret.");
@@ -59,5 +62,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+    await authService.EnsureAdminSeededAsync();
+}
 
 app.Run();
