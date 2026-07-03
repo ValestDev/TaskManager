@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskManager.Application.Interfaces;
 using TaskManager.Domain.Entities;
 using TaskManager.Infrastructure.Persistence;
+using TaskManager.Domain.Enums;
 
 namespace TaskManager.Infrastructure.Repositories;
 
@@ -29,6 +30,11 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+    }
+
+    public async Task<bool> AnyAdminExistsAsync()
+    {
+    return await _context.Users.AnyAsync(u => u.Role == UserRole.Admin);
     }
 
     public async Task AddAsync(User user)

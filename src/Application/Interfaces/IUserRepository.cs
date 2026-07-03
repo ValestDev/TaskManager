@@ -11,4 +11,6 @@ public interface IUserRepository
     Task AddAsync(User user);
     void Update(User user);
     Task SaveChangesAsync();
+    Task<bool> AnyAdminExistsAsync();
+
 }
