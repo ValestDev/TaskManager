@@ -60,6 +60,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+app.UseMiddleware<TaskManager.API.Middleware.ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
