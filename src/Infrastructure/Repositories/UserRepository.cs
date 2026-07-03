@@ -51,4 +51,35 @@ public class UserRepository : IUserRepository
     {
         await _context.SaveChangesAsync();
     }
+
+     public async Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(int page, int pageSize, string? search)
+    {
+    var query = _context.Users.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        var term = search.Trim().ToLower();
+        query = query.Where(u =>
+            u.Name.ToLower().Contains(term) ||
+            u.Email.ToLower().Contains(term));
+    }
+
+    var total = await query.CountAsync();
+
+    var items = await query
+        .OrderBy(u => u.Name)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    return (items, total);
+    }
+
+    public async Task<IEnumerable<User>> GetAllActiveAsync()
+    {
+        return await _context.Users
+            .Where(u => u.IsActive)
+            .OrderBy(u => u.Name)
+            .ToListAsync();
+    }
 }

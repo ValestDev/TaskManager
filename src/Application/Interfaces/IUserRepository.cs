@@ -13,4 +13,9 @@ public interface IUserRepository
     Task SaveChangesAsync();
     Task<bool> AnyAdminExistsAsync();
 
+    Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(int page, int pageSize, string? search);
+    Task<IEnumerable<User>> GetAllActiveAsync(); 
+
+
+
 }
