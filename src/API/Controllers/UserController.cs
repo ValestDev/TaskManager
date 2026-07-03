@@ -62,4 +62,11 @@ public class UsersController : ControllerBase
         await _userService.DeactivateAsync(id);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/reactivate")]
+    public async Task<IActionResult> Reactivate(Guid id)
+    {
+        await _userService.ReactivateAsync(id);
+        return NoContent();
+    }
 }

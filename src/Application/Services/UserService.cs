@@ -94,6 +94,16 @@ public class UserService : IUserService
         return users.Select(MapToDto);
     }
 
+    public async Task ReactivateAsync(Guid id)
+    {   
+    var user = await _userRepository.GetByIdAsync(id)
+        ?? throw new KeyNotFoundException("Usuario no encontrado.");
+
+    user.IsActive = true;
+    _userRepository.Update(user);
+    await _userRepository.SaveChangesAsync();
+    }
+
     private static UserDto MapToDto(User user) => new()
     {
         Id = user.Id,
