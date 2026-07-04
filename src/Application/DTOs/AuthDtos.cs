@@ -27,3 +27,10 @@ public class RefreshTokenRequestDto
     [Required]
     public string RefreshToken { get; set; } = string.Empty;
 }
+
+public class OnlineUserDto
+{
+    public Guid UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public DateTime LoginAt { get; set; }
+}

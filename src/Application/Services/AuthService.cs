@@ -11,21 +11,27 @@ namespace TaskManager.Application.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly ISessionRepository _sessionRepository;
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
+    private readonly IPresenceNotifier _presenceNotifier;
     private readonly IConfiguration _config;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository userRepository,
+        ISessionRepository sessionRepository,
         ITokenService tokenService,
         IEmailService emailService,
+        IPresenceNotifier presenceNotifier,
         IConfiguration config,
         ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
+        _sessionRepository = sessionRepository;
         _tokenService = tokenService;
         _emailService = emailService;
+        _presenceNotifier = presenceNotifier;
         _config = config;
         _logger = logger;
     }
@@ -52,6 +58,17 @@ public class AuthService : IAuthService
         user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
         _userRepository.Update(user);
         await _userRepository.SaveChangesAsync();
+
+        var session = new Session
+        {
+            UserId = user.Id,
+            LoginAt = DateTime.UtcNow,
+            IsOnline = true
+        };
+        await _sessionRepository.AddAsync(session);
+        await _sessionRepository.SaveChangesAsync();
+
+        await _presenceNotifier.NotifyUserOnline(user.Id, user.Name, session.LoginAt);
 
         return new LoginResponseDto
         {
@@ -103,6 +120,17 @@ public class AuthService : IAuthService
         user.RefreshTokenExpiresAt = null;
         _userRepository.Update(user);
         await _userRepository.SaveChangesAsync();
+
+        var session = await _sessionRepository.GetActiveSessionAsync(userId);
+        if (session is not null)
+        {
+            session.IsOnline = false;
+            session.LogoutAt = DateTime.UtcNow;
+            _sessionRepository.Update(session);
+            await _sessionRepository.SaveChangesAsync();
+        }
+
+        await _presenceNotifier.NotifyUserOffline(userId, user.Name);
     }
 
     public async Task EnsureAdminSeededAsync()
@@ -149,5 +177,17 @@ public class AuthService : IAuthService
             result[i] = chars[bytes[i] % chars.Length];
         }
         return new string(result);
+    }
+
+    public async Task<IEnumerable<OnlineUserDto>> GetOnlineUsersAsync()
+    {
+    var sessions = await _sessionRepository.GetOnlineSessionsAsync();
+
+    return sessions.Select(s => new OnlineUserDto
+    {
+        UserId = s.UserId,
+        UserName = s.User?.Name ?? string.Empty,
+        LoginAt = s.LoginAt
+    });
     }
 }

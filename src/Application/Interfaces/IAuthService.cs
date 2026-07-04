@@ -8,5 +8,5 @@ public interface IAuthService
     Task<LoginResponseDto> RefreshTokenAsync(string refreshToken);
     Task LogoutAsync(Guid userId);
     Task EnsureAdminSeededAsync();
-
+    Task<IEnumerable<OnlineUserDto>> GetOnlineUsersAsync();
 }

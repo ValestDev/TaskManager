@@ -46,4 +46,12 @@ public class AuthController : ControllerBase
         await _authService.LogoutAsync(userId);
         return NoContent();
     }
+
+    [Authorize]
+    [HttpGet("online-users")]
+    public async Task<ActionResult<IEnumerable<OnlineUserDto>>> GetOnlineUsers()
+    {
+        var result = await _authService.GetOnlineUsersAsync();
+        return Ok(result);
+    }
 }
