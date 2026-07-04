@@ -7,7 +7,7 @@ namespace TaskManager.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize]  
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -18,6 +18,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]   
     public async Task<ActionResult<PagedResultDto<UserDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
@@ -28,14 +29,14 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("active")]
-    [Authorize] // cualquier usuario autenticado, no solo Admin
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActive()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActive()   
     {
         var result = await _userService.GetAllActiveAsync();
         return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "Admin")]  
     public async Task<ActionResult<UserDto>> GetById(Guid id)
     {
         var result = await _userService.GetByIdAsync(id);
@@ -43,6 +44,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]   
     public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto)
     {
         var result = await _userService.CreateAsync(dto);
@@ -50,6 +52,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin")]  
     public async Task<ActionResult<UserDto>> Update(Guid id, [FromBody] UpdateUserDto dto)
     {
         var result = await _userService.UpdateAsync(id, dto);
@@ -57,6 +60,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]   
     public async Task<IActionResult> Deactivate(Guid id)
     {
         await _userService.DeactivateAsync(id);
@@ -64,6 +68,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/reactivate")]
+    [Authorize(Roles = "Admin")]   
     public async Task<IActionResult> Reactivate(Guid id)
     {
         await _userService.ReactivateAsync(id);

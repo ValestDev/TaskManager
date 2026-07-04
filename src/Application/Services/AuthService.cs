@@ -42,11 +42,16 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+       var user = await _userRepository.GetByEmailAsync(request.Email);
 
-        if (user is null || !user.IsActive)
+        if (user is null)
         {
             throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        if (!user.IsActive)
+        {
+            throw new UnauthorizedAccessException("Tu cuenta ha sido desactivada. Contacta al administrador.");
         }
 
         var passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
