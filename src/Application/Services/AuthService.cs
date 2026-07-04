@@ -63,6 +63,14 @@ public class AuthService : IAuthService
         _userRepository.Update(user);
         await _userRepository.SaveChangesAsync();
 
+       var previousSession = await _sessionRepository.GetActiveSessionAsync(user.Id);
+        if (previousSession is not null)
+        {
+            previousSession.IsOnline = false;
+            previousSession.LogoutAt = DateTime.UtcNow;
+            _sessionRepository.Update(previousSession);
+        }
+
         var session = new Session
         {
             UserId = user.Id,
