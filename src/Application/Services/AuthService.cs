@@ -17,6 +17,8 @@ public class AuthService : IAuthService
     private readonly IPresenceNotifier _presenceNotifier;
     private readonly IConfiguration _config;
     private readonly ILogger<AuthService> _logger;
+    private readonly IAuditService _auditService;
+
 
     public AuthService(
         IUserRepository userRepository,
@@ -25,7 +27,8 @@ public class AuthService : IAuthService
         IEmailService emailService,
         IPresenceNotifier presenceNotifier,
         IConfiguration config,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IAuditService auditService)
     {
         _userRepository = userRepository;
         _sessionRepository = sessionRepository;
@@ -34,6 +37,7 @@ public class AuthService : IAuthService
         _presenceNotifier = presenceNotifier;
         _config = config;
         _logger = logger;
+        _auditService = auditService;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -69,6 +73,9 @@ public class AuthService : IAuthService
         await _sessionRepository.SaveChangesAsync();
 
         await _presenceNotifier.NotifyUserOnline(user.Id, user.Name, session.LoginAt);
+
+        await _auditService.LogAsync(AuditAction.Login, user.Id, user.Email, "Inicio de sesión exitoso");
+
 
         return new LoginResponseDto
         {

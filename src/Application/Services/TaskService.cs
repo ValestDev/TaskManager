@@ -9,11 +9,13 @@ public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IAuditService _auditService;
 
-    public TaskService(ITaskRepository taskRepository, IUserRepository userRepository)
+    public TaskService(ITaskRepository taskRepository, IUserRepository userRepository, IAuditService auditService)
     {
         _taskRepository = taskRepository;
         _userRepository = userRepository;
+        _auditService = auditService;
     }
 
     public async Task<PagedResultDto<TaskItemDto>> GetPagedAsync(
@@ -64,6 +66,14 @@ public class TaskService : ITaskService
         var created = await _taskRepository.GetByIdAsync(task.Id)
             ?? throw new InvalidOperationException("Error al recuperar la tarea recién creada.");
 
+        await _auditService.LogAsync(AuditAction.TaskCreated, createdById, null, $"Tarea creada: {task.Title}");
+
+        if (task.AssignedToId.HasValue)
+        {
+            await _auditService.LogAsync(AuditAction.TaskAssigned, createdById, null,
+                $"Tarea '{task.Title}' asignada al usuario {task.AssignedToId}");
+        }
+
         return MapToDto(created);
     }
 
@@ -89,6 +99,8 @@ public class TaskService : ITaskService
             }
         }
 
+        var previousAssignedToId = task.AssignedToId;
+
         task.Title = dto.Title;
         task.Description = dto.Description;
         task.Status = dto.Status;
@@ -97,6 +109,14 @@ public class TaskService : ITaskService
 
         _taskRepository.Update(task);
         await _taskRepository.SaveChangesAsync();
+
+        await _auditService.LogAsync(AuditAction.TaskUpdated, currentUserId, null, $"Tarea actualizada: {task.Title}");
+
+        if (dto.AssignedToId != previousAssignedToId)
+        {
+            await _auditService.LogAsync(AuditAction.TaskAssigned, currentUserId, null,
+                $"Tarea '{task.Title}' reasignada al usuario {dto.AssignedToId}");
+        }
 
         return MapToDto(task);
     }

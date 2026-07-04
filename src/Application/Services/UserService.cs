@@ -1,16 +1,19 @@
 using TaskManager.Application.DTOs;
 using TaskManager.Application.Interfaces;
 using TaskManager.Domain.Entities;
+using TaskManager.Domain.Enums;
 
 namespace TaskManager.Application.Services;
 
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IAuditService _auditService;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserRepository userRepository, IAuditService auditService)
     {
         _userRepository = userRepository;
+        _auditService = auditService;
     }
 
     public async Task<PagedResultDto<UserDto>> GetPagedAsync(int page, int pageSize, string? search)
@@ -54,6 +57,8 @@ public class UserService : IUserService
         await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
 
+        await _auditService.LogAsync(AuditAction.UserCreated, user.Id, user.Email, "Usuario creado");
+
         return MapToDto(user);
     }
 
@@ -75,6 +80,8 @@ public class UserService : IUserService
         _userRepository.Update(user);
         await _userRepository.SaveChangesAsync();
 
+        await _auditService.LogAsync(AuditAction.UserUpdated, user.Id, user.Email, "Usuario actualizado");
+
         return MapToDto(user);
     }
 
@@ -86,22 +93,26 @@ public class UserService : IUserService
         user.IsActive = false;
         _userRepository.Update(user);
         await _userRepository.SaveChangesAsync();
+
+        await _auditService.LogAsync(AuditAction.UserDeactivated, user.Id, user.Email, "Usuario desactivado");
+    }
+
+    public async Task ReactivateAsync(Guid id)
+    {
+        var user = await _userRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("Usuario no encontrado.");
+
+        user.IsActive = true;
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
+
+        await _auditService.LogAsync(AuditAction.UserReactivated, user.Id, user.Email, "Usuario reactivado");
     }
 
     public async Task<IEnumerable<UserDto>> GetAllActiveAsync()
     {
         var users = await _userRepository.GetAllActiveAsync();
         return users.Select(MapToDto);
-    }
-
-    public async Task ReactivateAsync(Guid id)
-    {   
-    var user = await _userRepository.GetByIdAsync(id)
-        ?? throw new KeyNotFoundException("Usuario no encontrado.");
-
-    user.IsActive = true;
-    _userRepository.Update(user);
-    await _userRepository.SaveChangesAsync();
     }
 
     private static UserDto MapToDto(User user) => new()
