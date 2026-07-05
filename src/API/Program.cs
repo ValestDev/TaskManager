@@ -99,6 +99,15 @@ app.MapHub<PresenceHub>("/hubs/presence");
 
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+
+    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+    await authService.EnsureAdminSeededAsync();
+}
+
+using (var scope = app.Services.CreateScope())
+{
     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
     await authService.EnsureAdminSeededAsync();
 }
