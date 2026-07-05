@@ -21,6 +21,14 @@ Construido con **Clean Architecture** en .NET, autenticación **JWT con refresh 
 
 ## 🖼️ Vista previa
 
+<img width="1723" height="793" alt="TaskManagerLogin" src="https://github.com/user-attachments/assets/9e36a9f4-9b32-4ed7-9a55-08ece1514d0c" />
+<br><br>
+
+<img width="1723" height="912" alt="TaskManagerUsuarios" src="https://github.com/user-attachments/assets/ec7aba78-733b-4cc0-9364-4e6069b2da18" />
+<br><br>
+<img width="1881" height="919" alt="TaskManagerTareas" src="https://github.com/user-attachments/assets/7fd4f66e-a484-40cb-8bf3-3e6625a98e48" />
+<br><br>
+
 
 
 ## 🏗️ Arquitectura
