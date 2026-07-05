@@ -1,0 +1,8 @@
+using Microsoft.AspNetCore.SignalR;
+
+namespace TaskManager.API.Hubs;
+
+public class PresenceHub : Hub
+{
+   
+}
